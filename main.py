@@ -4,8 +4,12 @@
 # In[1]:
 
 
+# Look up nltk library
+
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer as SIA
+
+
 import praw
 import matplotlib.pyplot as plt
 import math
@@ -16,6 +20,7 @@ import numpy as np
 
 # In[2]:
 
+# download external libraries?
 
 nltk.download('vader_lexicon')
 nltk.download('stopwords')
@@ -23,6 +28,7 @@ nltk.download('stopwords')
 
 # In[3]:
 
+# login to praw
 
 reddit = praw.Reddit(client_id='*********',
                     client_secret='******************',
@@ -32,6 +38,8 @@ reddit = praw.Reddit(client_id='*********',
 # In[4]:
 
 
+# subreddit and stocks
+
 sub_reddits = reddit.subreddit('wallstreetbets')
 stocks = ["GME", "AMC"] 
 # For example purposes. To use this as a live trading tool, you'd want to populate this with tickers that have been mentioned on the pertinent community (WSB in our case) in a specified period.
@@ -40,32 +48,40 @@ stocks = ["GME", "AMC"]
 # In[5]:
 
 
+# comment sentiment function
+
 def commentSentiment(ticker, urlT):
-    subComments = []
-    bodyComment = []
+  
+  '''
+  commentSentiment function taking in ticker and urlT variable
+  '''
+    subComments = [] # sub comments
+    bodyComment = [] # body comments
     try:
-        check = reddit.submission(url=urlT)
-        subComments = check.comments
+        check = reddit.submission(url=urlT) # check if urlT 
+        subComments = check.comments # Subcomments is list of comments
     except:
-        return 0
+        return 0 # return 0 comments if an error
     
-    for comment in subComments:
+    for comment in subComments: # for comments in subcommnets
         try: 
-            bodyComment.append(comment.body)
+            bodyComment.append(comment.body) # append body to comment 
         except:
             return 0
+          
     
-    sia = SIA()
-    results = []
-    for line in bodyComment:
-        scores = sia.polarity_scores(line)
-        scores['headline'] = line
+    
+    sia = SIA() # look up SIA
+    results = [] # results
+    for line in bodyComment: # analyze line in each body comment
+        scores = sia.polarity_scores(line) # calculate polarity scores? And pass in each line of text
+        scores['headline'] = line # scores under headline index is that line 
 
-        results.append(scores)
+        results.append(scores) # append scores to that result 
     
-    df =pd.DataFrame.from_records(results)
-    df.head()
-    df['label'] = 0
+    df =pd.DataFrame.from_records(results) # create dataframe from result
+    df.head() # generate head
+    df['label'] = 0 # label = 0 
     
     try:
         df.loc[df['compound'] > 0.1, 'label'] = 1
